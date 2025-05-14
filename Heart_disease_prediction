@@ -1,0 +1,129 @@
+import pandas as pd                                                             # Handles data manipulation and analysis.
+import numpy as np                                                              # Provides support for numerical operations.
+import os                                                                       # Interacts with the operating system
+import matplotlib.pyplot as plt                                                 # Creates static visualizations (plots/graphs)
+import s…regression for classification
+from sklearn.tree import DecisionTreeClassifier                                 # Implements decision tree classification
+from sklearn.neighbors import KNeighborsClassifier                              #  Implements K-nearest neighbors (KNN) classification.
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from tabulate import tabulate                                                   # Formats data as tables for better readability.
+# Load Dataset
+file_path = input("Enter the path to your dataset file: ")
+file_extension = os.path.splitext(file_path)[-1].lower()
+
+if file_extension == ".csv":
+    df = pd.read_csv(file_path)
+    print(f"\nFile loaded successfully: {file_path}\n")
+else:
+    raise ValueError("Unsupported file format. Please use a CSV file.")
+
+# Display Dataset Overview
+print("\nDataset Overview:")
+print(tabulate(df.head(10), headers="keys", tablefmt="grid"))  # First 10 rows
+
+print("\nColumn Information:")
+print(df.info())
+
+print("\nSummary Statistics:")
+print(tabulate(df.describe(), headers="keys", tablefmt="grid"))  # Summary stats
+# Data Cleaning & Preprocessing
+df = df.dropna()
+target = 'target'
+X = df.drop(columns=[target])
+y = df[target]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+print("Data Cleaning & Preprocessing Done")
+# Define Models
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "Decision Tree": DecisionTreeClassifier(max_depth=5, random_state=42),
+    "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=5)
+}
+print("Different Models Used for Operations\n")
+print("1.Logistic Regression\n")
+print("2.Decision Tree\n")
+print("3.K-Nearest Neighbors\n")
+# Train and Evaluate Models
+results = []
+print("\nTraining and Evaluating Different Models...\n")
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+
+    # Store results
+    results.append([name, accuracy, classification_report(y_test, y_pred, output_dict=True)])
+…    plt.show()
+# Ensure results only has two columns (drop extra columns if necessary)
+filtered_results = [row[:2] for row in results]  # Keep only first two elements per row
+results_df = pd.DataFrame(filtered_results, columns=["Model", "Accuracy"])
+
+# Print table
+print("\nModel Performance Comparison:\n")
+print(tabulate(results_df, headers="keys", tablefmt="pretty", showindex=False))
+
+# Visualization
+plt.figure(figsize=(8, 5))
+sns.barplot(x="Model", y="Accuracy", hue="Model", data=results_df, palette="viridis", legend=False)
+plt.title("Model Accuracy Comparison")
+plt.xlabel("Models")
+plt.ylabel("Accuracy")
+plt.ylim(0, 1)
+plt.xticks(rotation=45)  # Rotate labels for readability
+plt.show()
+# Best Model Selection
+best_model = max(results, key=lambda x: x[1])
+print(f"\nBest Performing Model: {best_model[0]} with Accuracy: {best_model[1]:.2f}\n")
+# Ensure best_model contains exactly two values (model name and accuracy)
+best_model_name, best_model_accuracy = best_model[:2]
+
+# Retrieve the best model
+final_model = models[best_model_name]
+
+# Predict on the full dataset
+df['Predicted_Target'] = final_model.predict(scaler.transform(X))
+
+# Identify individuals predicted to have heart disease (assuming '1' represents heart disease)
+…plt.figure(figsize=(8, 5))
+sns.countplot(x="Predicted_Target", hue="Predicted_Target", data=df, palette="coolwarm", legend=False)  # Added 'hue'
+plt.xticks([0, 1], ['No Heart Disease', 'Heart Disease'])
+plt.title("Predicted Heart Disease Cases")
+plt.xlabel("Prediction")
+plt.ylabel("Count")
+plt.show()
+if not heart_disease_cases.empty:
+    plt.figure(figsize=(12, 8))  # Increase figure size
+    for column in X.columns[:5]:
+        sns.histplot(heart_disease_cases[column], kde=True, label=column, bins=20, linewidth=2)
+
+    plt.legend(fontsize=12)  # Increase legend font size
+    plt.title("Feature Distribution of Predicted Heart Disease Cases", fontsize=14)
+    plt.xlabel("Feature Values", fontsize=12)
+    plt.ylabel("Density", fontsize=12)
+    plt.xticks(fontsize=10)  # Increase x-axis tick size
+    plt.yticks(fontsize=10)  # Increase y-axis tick size
+    plt.show()
+# Define age groups
+bins = [0, 40, 60, 100]
+labels = ["Young (<40)", "Middle-aged (40-60)", "Older (>60)"]
+df["Age_Group"] = pd.cut(df["age"], bins=bins, labels=labels)
+
+# Split data by sex
+male_cases = df[(df["Predicted_Target"] == 1) & (df["sex"] == 1)]
+female_cases = df[(df["Predicted_Target"] == 1) & (df["sex"] == 0)]
+
+# Create Subplots
+…plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
